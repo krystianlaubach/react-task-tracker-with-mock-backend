@@ -23,6 +23,13 @@ class TaskFetcher {
         return await response.json();
     };
 
+    /**
+     * @public
+     *
+     * @param task
+     *
+     * @returns {Promise<any>}
+     */
     async saveTaskToServer(task) {
         const response = await fetch ('http://localhost:5000/tasks/', {
             method: 'POST',
@@ -33,6 +40,13 @@ class TaskFetcher {
         return await response.json();
     };
 
+    /**
+     * @public
+     *
+     * @param updatedTask
+     *
+     * @returns {Promise<any>}
+     */
     async updateTask(updatedTask) {
         const response = await fetch ('http://localhost:5000/tasks/' + updatedTask.id, {
             method: 'PUT',
@@ -43,6 +57,13 @@ class TaskFetcher {
         return await response.json();
     };
 
+    /**
+     * @public
+     *
+     * @param {number} id
+     *
+     * @returns {Promise<Response>}
+     */
     async deleteTaskFromServer(id) {
         return await fetch('http://localhost:5000/tasks/' + id, {
             method: 'DELETE',
