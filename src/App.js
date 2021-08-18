@@ -1,54 +1,75 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+import TaskFetcher from './data/TaskFetcher';
 import Header from './components/Header';
 import AddTask from './components/AddTask';
 import Tasks from './components/Tasks';
+import Footer from "./components/Footer";
+import About from "./components/About";
 
 function App() {
-  const [showAddTask, setShowAddTask] = useState(false);
-  const [tasks, setTasks] = useState([]);
+    const [showAddTask, setShowAddTask] = useState(false);
+    const [tasks, setTasks] = useState([]);
 
-  const toggleAddTask = () => {
-    setShowAddTask(!showAddTask);
-  };
+    const toggleAddTask = () => {
+        setShowAddTask(!showAddTask);
+    };
 
-  const saveTask = (task) => {
-    const id = getNextId();
-    const newTask = { id, ...task };
+    const saveTask = (task) => {
+        TaskFetcher.saveTaskToServer(task).then((newTask) => {
+            setTasks([...tasks, newTask]);
+            toggleAddTask();
+        });
+    };
 
-    setTasks([...tasks, newTask]);
-    toggleAddTask();
-  };
+    const toggleReminder = (id) => {
+        TaskFetcher.fetchTask(id).then((taskToToggle) => {
+            const updatedTask = { ...taskToToggle, reminder: !taskToToggle.reminder };
 
-  const getNextId = () => {
-    return tasks.length > 0
-        ? Math.max.apply(Math, tasks.map((task) => { return task.id; })) + 1
-        : 1;
-  };
+            TaskFetcher.updateTask(updatedTask).then((updatedTaskFromServer) => {
+                setTasks(
+                    tasks.map(
+                        (task) => task.id === id ? { ...task, reminder: updatedTaskFromServer.reminder } : task
+                    )
+                );
+            });
+        });
+    };
 
-  const toggleReminder = (id) => {
-    setTasks(
-        tasks.map(
-            (task) => task.id === id ? { ...task, reminder: !task.reminder } : task
-        )
+    const deleteTask = (id) => {
+        TaskFetcher.deleteTaskFromServer(id).then((response) => {
+            if (response.ok) {
+                setTasks(
+                    tasks.filter(
+                        (task) => task.id !== id
+                    )
+                );
+            }
+        });
+    };
+
+    useEffect(() => {
+        TaskFetcher.fetchTasks().then((tasksFromServer) => {
+            setTasks(tasksFromServer);
+        });
+    }, []);
+
+    return (
+        <Router>
+            <div className='container'>
+                <Header showAddTask={ showAddTask } onToggleAddTask={ toggleAddTask } />
+                <Route path='/' exact render={() => (
+                    <div>
+                        { showAddTask && <AddTask onSaveTask={ saveTask } /> }
+                        <Tasks tasks={ tasks } onToggle={ toggleReminder } onDelete={ deleteTask } />
+                        <Footer />
+                    </div>
+                )} />
+                <Route path='/about' component={ About } />
+            </div>
+        </Router>
     );
-  };
-
-  const deleteTask = (id) => {
-    setTasks(
-        tasks.filter(
-            (task) => task.id !== id
-        )
-    );
-  };
-
-  return (
-      <div className='container'>
-        <Header showAddTask={ showAddTask } onToggleAddTask={ toggleAddTask } />
-        { showAddTask && <AddTask onSaveTask={ saveTask } /> }
-        <Tasks tasks={ tasks } onToggle={ toggleReminder } onDelete={ deleteTask } />
-      </div>
-  );
 }
 
 export default App;

@@ -7,7 +7,7 @@ import 'react-datepicker/dist/react-datepicker.css'
 function AddTask({ onSaveTask }) {
     const [subject, setSubject] = useState('');
     const [subjectError, setSubjectError] = useState('');
-    const [taskDate, setTaskDate] = useState(new Date());
+    const [taskDateTime, setTaskDateTime] = useState(new Date());
     const [reminder, setReminder] = useState(false);
 
     const onSubjectChange = (event) => {
@@ -19,7 +19,7 @@ function AddTask({ onSaveTask }) {
     };
 
     const onDateChange = (date) => {
-        setTaskDate(date);
+        setTaskDateTime(date);
     };
 
     const onReminderChange = (event) => {
@@ -32,6 +32,8 @@ function AddTask({ onSaveTask }) {
         if (!validate()) {
             return;
         }
+
+        const taskDate = JSON.parse(JSON.stringify(taskDateTime));
 
         onSaveTask({ subject, taskDate, reminder });
 
@@ -52,7 +54,7 @@ function AddTask({ onSaveTask }) {
 
     const resetForm = () => {
         setSubject('');
-        setTaskDate(new Date());
+        setTaskDateTime(new Date());
         setReminder(false);
     };
 
@@ -72,7 +74,7 @@ function AddTask({ onSaveTask }) {
                 <label>Day & Time</label>
                 <div>
                     <DatePicker
-                        selected={ taskDate }
+                        selected={ taskDateTime }
                         showTimeSelect
                         timeIntervals={ 15 }
                         dateFormat='dd/MM/yyyy h:mm a'
